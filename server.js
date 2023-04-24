@@ -8,8 +8,13 @@ const errorHandler = require("./middleware/errorHandler");
 const cookieParser = require("cookie-parser");
 const varifyJWT = require("./middleware/verifyJWT");
 const credentials = require("./middleware/credentials");
+const mongoose = require("mongoose");
+const connectDB = require("./config/connectDB");
 const PORT = process.env.PORT || 3500;
 cookieParser;
+
+// connect to MongoDB
+connectDB();
 
 // handle option credential check before CORS!
 // and check cookies credential requirement
@@ -53,4 +58,7 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+mongoose.connection.once("open", () => {
+  console.log("connected to MongoDB");
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+});

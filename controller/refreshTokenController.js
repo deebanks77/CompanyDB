@@ -1,10 +1,4 @@
-const usersDB = {
-  users: require("../model/users.json"),
-  setUsers: function name(data) {
-    this.users = data;
-  },
-};
-
+const User = require("../model/User");
 const jwt = require("jsonwebtoken");
 
 const handleRefreshToken = async (req, res) => {
@@ -14,12 +8,10 @@ const handleRefreshToken = async (req, res) => {
   }
   // console.log(cookies);
   const refreshToken = cookies.token;
-  //   check if user token exist
-  const foundUser = usersDB.users.find(
-    (user) => user.refreshToken === refreshToken
-  );
+  //   check if user token exist in MongoDB
+  const foundUser = await User.findOne({ refreshToken }).exec();
   if (!foundUser) return res.sendStatus(403); //Forbiden
-
+  // Verify Token
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
     if (err || decoded.username !== foundUser.username)
       return res.sendStatus(403); //Forbiden

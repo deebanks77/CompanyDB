@@ -1,12 +1,4 @@
-const usersDB = {
-  users: require("../model/users.json"),
-  setUsers: function (data) {
-    this.users = data;
-  },
-};
-
-const fsPromises = require("fs").promises;
-const path = require("path");
+const User = require("../model/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -19,8 +11,7 @@ const handleNewUser = async (req, res) => {
       .json({ message: "Please enter username and password" });
   }
   // check if username exist on database
-  const duplicate = usersDB.users.find((user) => user.username === username);
-
+  const duplicate = await User.findOne({ username }).exec();
   if (duplicate) {
     return res.status(409).json({ message: "Username is not available" });
   }
@@ -42,30 +33,23 @@ const handleNewUser = async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "1d" }
     );
-    // create new user object
-    const newUser = {
+    // Create a new user in MongoDB
+    const result = await User.create({
       username: username,
       roles: roles,
       password: hashPassword,
       refreshToken: refreshToken,
-    };
-
-    // Update users database
-    usersDB.setUsers([...usersDB.users, newUser]);
-    await fsPromises.writeFile(
-      path.resolve(__dirname, "..", "model", "users.json"),
-      JSON.stringify(usersDB.users)
-    );
+    });
     // send response to client
-    res.cookie("token", refreshToken, {
-      httpOnly: true,
-      sameSite: "None",
-      secure: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-    return res.status(201).json({
-      token: accessToken,
-    });
+    res
+      .cookie("token", refreshToken, {
+        httpOnly: true,
+        sameSite: "None",
+        secure: false,
+        maxAge: 24 * 60 * 60 * 1000,
+      })
+      .status(201)
+      .json({ accessToken });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
