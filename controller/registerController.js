@@ -45,7 +45,7 @@ const handleNewUser = async (req, res) => {
       .cookie("token", refreshToken, {
         httpOnly: true,
         sameSite: "None",
-        secure: false,
+        secure: true, // secure: false when testin on postman
         maxAge: 24 * 60 * 60 * 1000,
       })
       .status(201)
