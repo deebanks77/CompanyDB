@@ -1,6 +1,6 @@
 // Cross Origin Resource Sharing
 const allowedOrigin = [
-  "https://www.yoursite.com",
+  "https://companydb.onrender.com",
   "http://127.0.0.1:5500",
   "http://localhost:3500",
 ];
